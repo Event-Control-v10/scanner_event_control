@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<!-- TITRE ET META POUR LE RÉFÉRENCEMENT ET WHATSAPP -->
+<title>GOD'S CONTROL • Terminal Officiel</title>
+<meta name="description" content="Système de contrôle d'accès ultra-sécurisé par ProElites-Services. Validation des billets EVENT-Control en temps réel avec protocole anti-fraude.">
+<meta name="theme-color" content="#050505">
+
+<!-- CONFIGURATION POUR LES RÉSEAUX SOCIAUX (Aperçu du lien) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="GOD'S CONTROL • ProElites-Services">
+<meta property="og:description" content="Scanner officiel sécurisé - Accès réservé au personnel autorisé.">
+<meta property="og:image" content="https://res.cloudinary.com/dbvthdhwb/image/upload/v1766516304/Generated_Image_December_23_2025_-_5_31PM_teqheb.png">
+
+<!-- CONFIGURATION POUR IPHONE (Web App Mode) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="God's Control">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+
+<style>
+    :root { --accent: #00ffa2; --error: #ff4757; --warning: #ffa502; }
+
+    body { margin: 0; padding: 0; background: #000; color: white; font-family: 'Outfit', sans-serif; height: 100vh; overflow: hidden; }
+
+    /* --- CAMERA --- */
+    #reader { position: fixed; top: 0; left: 0; width: 100% !important; height: 100% !important; z-index: 1; }
+    #reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
+
+    /* --- VISEUR NÉON --- */
+    #reader__scan_region {
+        border: 2px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 40px !important;
+        box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.7) !important;
+        background: linear-gradient(to right, var(--accent) 4px, transparent 4px) 0 0, linear-gradient(to bottom, var(--accent) 4px, transparent 4px) 0 0, linear-gradient(to left, var(--accent) 4px, transparent 4px) 100% 0, linear-gradient(to bottom, var(--accent) 4px, transparent 4px) 100% 0, linear-gradient(to left, var(--accent) 4px, transparent 4px) 100% 100%, linear-gradient(to top, var(--accent) 4px, transparent 4px) 100% 100%, linear-gradient(to right, var(--accent) 4px, transparent 4px) 0 100%, linear-gradient(to top, var(--accent) 4px, transparent 4px) 0 100% !important;
+        background-repeat: no-repeat !important;
+        background-size: 40px 40px !important;
+    }
+    #reader__scan_region fieldset { border: none !important; }
+
+    /* --- UI ELEMENTS --- */
+    #status-label { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); z-index: 100; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; background: rgba(0,0,0,0.6); padding: 10px 25px; border-radius: 12px; font-size: 14px; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); }
+    .torch-btn { position: fixed; top: 25px; right: 25px; width: 50px; height: 50px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 50%; z-index: 101; display: none; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; }
+    .torch-btn.active { background: var(--accent); border-color: var(--accent); }
+    .start-overlay { position: fixed; inset: 0; background: #000; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .btn-main { background: var(--accent); color: #000; padding: 20px 40px; border-radius: 50px; font-weight: 900; border: none; font-size: 16px; text-transform: uppercase; cursor: pointer; }
+
+    /* --- ALERT RÉSEAU --- */
+    #offline-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 5000;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; padding: 30px; backdrop-filter: blur(15px);
+    }
+    .offline-icon { font-size: 60px; color: var(--warning); margin-bottom: 20px; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0.3; } }
+    .btn-retry { margin-top: 30px; background: #fff; color: #000; padding: 12px 25px; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; }
+
+    /* --- RESULTAT --- */
+    #resultPopup { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); background: rgba(0,0,0,0.7); }
+    .result-card { width: 92%; max-width: 400px; height: 78vh; background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 35px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.8); position: relative; }
+    
+    #loadingSpinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column; align-items: center; z-index: 5; }
+    .spinner { width: 50px; height: 50px; border: 3px solid rgba(0, 255, 162, 0.1); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; filter: drop-shadow(0 0 5px var(--accent)); }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    #iframe-container { flex-grow: 1; position: relative; z-index: 6; background: transparent; }
+    .btn-next { background: #fff; color: #000; padding: 22px; font-weight: 900; text-align: center; cursor: pointer; text-transform: uppercase; font-size: 16px; z-index: 10; }
+
+    /* HIDE LIBRARY UI */
+    #reader__dashboard_section_csr, #reader__status_span, button.html5-qrcode-element { display: none !important; }
+</style>
+</head>
+<body>
+
+    <div id="reader"></div>
+    <div id="status-label">Prêt au scan</div>
+
+    <!-- OVERLAY RÉSEAU MORT -->
+    <div id="offline-overlay">
+        <div class="offline-icon">📡</div>
+        <h1 style="color:var(--warning); margin:0;">SIGNAL INSTABLE</h1>
+        <p style="opacity:0.7; margin-top:15px;">La connexion est trop faible ou absente.<br>Vérifiez votre data et réessayez.</p>
+        <button class="btn-retry" onclick="checkDataFlow()">VÉRIFIER À NOUVEAU</button>
+    </div>
+
+    <div id="torchBtn" class="torch-btn" onclick="toggleTorch()">
+        <svg width="20" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+
+    <div id="startScreen" class="start-overlay">
+        <h1 style="margin-bottom: 30px; letter-spacing: 5px; font-weight: 900;">GOD'S CONTROL</h1>
+        <button class="btn-main" onclick="startScanner()">ACTIVER LE SCANNER</button>
+    </div>
+
+    <div id="resultPopup">
+        <div class="result-card">
+            <div id="loadingSpinner">
+                <div class="spinner"></div>
+                <p style="margin-top:15px; font-weight:800; font-size:11px; letter-spacing:2px; color:var(--accent);">VERIFICATION...</p>
+            </div>
+            <div id="iframe-container"></div>
+            <div class="btn-next" onclick="closeResult()">➔ Suivant</div>
+        </div>
+    </div>
+
+    <script>
+        const html5QrCode = new Html5Qrcode("reader");
+        const popup = document.getElementById('resultPopup');
+        const iframeContainer = document.getElementById('iframe-container');
+        const loader = document.getElementById('loadingSpinner');
+        const torchBtn = document.getElementById('torchBtn');
+        const statusLabel = document.getElementById('status-label');
+        const offlineOverlay = document.getElementById('offline-overlay');
+        
+        let isScanning = false;
+        let isFlashOn = false;
+        let loadTimeout;
+
+        const WEBHOOK_ID = "tzhbiv335htmhuhcxakjj6nzudo5e1j7";
+        const SECRET_KEY = "CHILL_ACCESS_2025_SECURE";
+
+        async function checkDataFlow() {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                await fetch('https://api.qrserver.com/v1/create-qr-code/?size=1x1&data=ping', { signal: controller.signal, mode: 'no-cors' });
+                offlineOverlay.style.display = 'none';
+                return true;
+            } catch (e) {
+                offlineOverlay.style.display = 'flex';
+                return false;
+            }
+        }
+
+        window.addEventListener('offline', () => offlineOverlay.style.display = 'flex');
+        window.addEventListener('online', checkDataFlow);
+
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.connect(g); g.connect(ctx.destination);
+                osc.frequency.value = type === 'error' ? 150 : 880;
+                g.gain.value = 0.05;
+                osc.start(); setTimeout(() => osc.stop(), 100);
+            } catch(e) {}
+        }
+        
+        function createAndLoadIframe(url, isSrcDoc = false) {
+            popup.style.display = 'flex';
+            loader.style.display = 'flex';
+            iframeContainer.innerHTML = ''; 
+
+            const newIframe = document.createElement('iframe');
+            newIframe.style.cssText = 'width:100%; height:100%; border:none; background:transparent; opacity:0; transition:opacity 0.3s ease;';
+
+            if (isSrcDoc) { 
+                newIframe.srcdoc = url; 
+            } else { 
+                newIframe.src = url;
+                loadTimeout = setTimeout(() => {
+                    if (loader.style.display !== 'none') {
+                        loader.style.display = 'none';
+                        alert("⚠️ Le serveur Make ne répond pas. Vérifiez votre connexion.");
+                        closeResult();
+                    }
+                }, 8000);
+            }
+            
+            newIframe.onload = () => {
+                clearTimeout(loadTimeout);
+                loader.style.display = 'none';
+                newIframe.style.opacity = '1';
+            };
+            iframeContainer.appendChild(newIframe);
+        }
+
+        async function startScanner() {
+            const isOnline = await checkDataFlow();
+            if (!isOnline) return;
+
+            document.getElementById('startScreen').style.display = 'none';
+            torchBtn.style.display = 'flex';
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 30, qrbox: (w,h) => { let s = Math.min(w,h)*0.65; return {width:s, height:s} } },
+                async (text) => {
+                    if (isScanning) return;
+
+                    if (!navigator.onLine) {
+                        playSound('error');
+                        offlineOverlay.style.display = 'flex';
+                        return;
+                    }
+
+                    isScanning = true;
+
+                    if (text.includes(WEBHOOK_ID)) {
+                        playSound('success');
+                        if (navigator.vibrate) navigator.vibrate(100);
+                        let finalUrl = text + (text.includes("?") ? "&" : "?") + "app_key=" + SECRET_KEY + "&_t=" + Date.now(); 
+                        createAndLoadIframe(finalUrl);
+                    } 
+                    else {
+                        playSound('error');
+                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                        const errorHTML = `<html><head><style>body{margin:0;padding:0;background:#000;color:#ff4757;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;text-align:center;padding:30px;}h1{font-size:26px;}p{color:#fff;opacity:.6;}.tag{margin-top:30px;background:rgba(255,71,87,.1);color:#ff4757;padding:10px 25px;border-radius:12px;border:1px solid rgba(255,71,87,.3);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;}</style></head><body><div style="font-size:80px;margin-bottom:20px;">🚫</div><h1>Code Hors Système</h1><p>Ce QR Code n'est pas un billet officiel. La signature numérique est <b>invalide</b> ou non répertoriée.</p><div class="tag">Protocole God's Control</div></body></html>`;
+                        createAndLoadIframe(errorHTML, true);
+                    }
+                }
+            ).catch(err => alert("Erreur Caméra."));
+        }
+
+        async function toggleTorch() {
+            try {
+                isFlashOn = !isFlashOn;
+                await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
+                torchBtn.classList.toggle('active');
+            } catch (e) {}
+        }
+
+        function closeResult() {
+            clearTimeout(loadTimeout);
+            popup.style.display = 'none';
+            iframeContainer.innerHTML = ''; 
+            loader.style.display = 'none';
+            setTimeout(() => { isScanning = false; }, 200);
+        }
+    </script>
+</body>
+</html>
